@@ -125,9 +125,9 @@ dmypy.json
 .pyre/
 
 # VSCode Editor Configuration File
-ModelEvaluation/.vscode
+ModelEvaluation/.vscode/
 
 # Image Data Folder excluded
-ModelEvaluation/ImageData/ImagesToRegister/FriendsRoom
-ModelEvaluation/ImageData/ImagesToRegister/PyImages
-ModelEvaluation/ImageData/TestImages
+ModelEvaluation/ImageData/ImagesToRegister/FriendsRoom/
+ModelEvaluation/ImageData/ImagesToRegister/PyImages/
+ModelEvaluation/ImageData/TestImages/
