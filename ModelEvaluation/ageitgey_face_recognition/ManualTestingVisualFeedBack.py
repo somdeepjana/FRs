@@ -18,6 +18,11 @@ import face_recognition
 from imutils import paths
 import imutils
 
+import sau
+
+#################################################################
+#   Defining all the commandline arguments
+#
 ap= argparse.ArgumentParser()
 ap.add_argument("-t", "--testfolder",
     help="Provide The folder Name of TestImages",
@@ -31,17 +36,43 @@ ap.add_argument("-s", "--score",
     help= "Enter the Evaluation Score after which the prediction are positive",
     default=50
 )
+ap.add_argument("-m", "--model",
+    help="Provide the dlib model for face detector",
+    default="cnn",
+    const="cnn",
+    nargs='?',
+    choices=["cnn", "hog"]
+)
+ap.add_argument("-u", "--upscale",
+    help="Proivide the detection level upscale value",
+    default=1
+)
+ap.add_argument("-j", "--jitters",
+    help= "Provide the Recognization Level Jitters",
+    default=1
+)
+ap.add_argument("-w", "--width",
+    help= "Provide image preprocessing resige width length is not needed because aspect ration will be kept the same",
+    default=700
+)
 args= vars(ap.parse_args())
+#
+#################################################################
 
+#################################################################
+#   specifiying the paths
+#
 trainedModel_path= os.path.join(
     "trainedSVM",
     args["room"]+".svm"
 )
+print("[INFO - TrainedModel] <path=", trainedModel_path, ">")
 
 trainedLables_path= os.path.join(
     "trainedSVM",
     args["room"]+".lables"
 )
+print("[INFO - TrainedModelLables] <path=", trainedLables_path, ">")
 
 testFolder_path= os.path.join(
     "..",
@@ -49,97 +80,86 @@ testFolder_path= os.path.join(
     "TestImages",
     args["testfolder"]
 )
+print("[INFO - TestImages] <path=", trainedLables_path, ">")
+#
+#################################################################
 
-def markFaces(image_base, bounding_box, name, eval_score, ref_score):
-    #################################################################
-    #   This is a utility Function for drawing bounding boxes and
-    #   putting the predicted name with score. It changes the
-    #   colour if the eval_score is below ref_score.
-    #   -----------------------------------------------------------
-    #   return: NONE
-    #
-    #   Parameters:
-    #       image_base: Numpy.ndArray representation of the image.
-    #       bounding_box: int of detected face's location in  (top,
-    #                     right, bottom, left) fromat.
-    #       name: str of The Name to be printed on the predicted
-    #             Lable.
-    #       eval_score: float64 of the predicted score.
-    #       ref_score: int/float of the reference score baced on
-    #                  which the positive or negative marking will
-    #                  happed.
-    #################################################################
-    (top, right, bottom, left)= bounding_box
-
-    if(eval_score> ref_score):
-        cv2.rectangle(
-            image_base, 
-            (left, top),(right, bottom),
-            (0, 255, 0), 2
-        )
-
-        nameProbText_Y= top-10 if top - 10 > 10 else top + 10
-        text= "{}: {:.2f}%".format(name, eval_score)
-        cv2.putText(
-            image_base,
-            text,
-            (left, nameProbText_Y),
-            cv2.QT_FONT_NORMAL,
-            0.5, (0, 255, 0), 1, cv2.LINE_AA
-        )
-    else:
-        cv2.rectangle(
-            image_base, 
-            (left, top),(right, bottom),
-            (255, 0, 0),2
-        )
+#################################################################
+#   Loading The model and its clacess
+#
+recognizerModel= pickle.loads(open(trainedModel_path, "rb").read())
+le= pickle.loads(open(trainedLables_path, "rb").read())
+#
+#################################################################
 
 testImage_paths= list(paths.list_images(testFolder_path))
-if(len(testImage_paths)>0):
-    for testImage_path in testImage_paths:
+no_of_testImages= len(testImage_paths)
+print("[INFO - TotalTestImages] <No of Test Images=", no_of_testImages, ">")
+
+if(no_of_testImages>0):
+    for (i_img, testImage_path) in enumerate(testImage_paths):
         testImage_name= testImage_path.split("\\")[-1]
-        #testImage= face_recognition.load_image_file(testImage_path)
-        #testImage= cv2.imread(testImage_path)
+
+        #   Preprocessing the Image befor pushing it to the CNN
+        print("[INFO - LoadingPreprocess] <Image=", testImage_name, ">")
         testImage= imutils.resize(
             cv2.cvtColor(
                 cv2.imread(testImage_path),
                 cv2.COLOR_BGR2RGB
             ),
-            width= 700
+            width= int(args["width"])
         )
+        print("[INFO - LoadedPreprocessedSuccessful]")
 
+        # Detecting all the faces
+        print("\t[INFO - DetectingFaces]")
         face_locations= face_recognition.face_locations(
             testImage,
-            model="cnn",
-            number_of_times_to_upsample= 1
+            model=args["model"],
+            number_of_times_to_upsample= int(args["upscale"])
         )
+        no_of_faces= len(face_locations)
 
-        if(len(face_locations)>0):
+        if(no_of_faces>0):
+            print("\t[INFO - DetectionSuccessful] <Detected Faces no=", no_of_faces, ">")
+
+            print("\t[INFO - GeneratingFaceEmbedings]")
             face_encodings= face_recognition.face_encodings(
                 testImage,
                 model="cnn",
-                num_jitters= 1,
+                num_jitters= int(args["jitters"]),
                 known_face_locations= face_locations
             )
+            print("\t[INFO - GenerationSuccessful]")
 
-            recognizerModel= pickle.loads(open(trainedModel_path, "rb").read())
-            le= pickle.loads(open(trainedLables_path, "rb").read())
+            print("\t[INFO - PredictingFaces]")
             predictions= recognizerModel.predict_proba(face_encodings)
-            #pred_name= recognizerModel.predict(face_encodings)
+            print("\t[INFO - PredictionSuccessful]")
 
+            #################################################################
+            #   Predicting The Presence of a Person
+            #
+            present= []
             for (i, pred) in enumerate(predictions):
                 highest_chans= np.argmax(pred)
                 score= pred[highest_chans] * 100
 
                 name= le.classes_[highest_chans]
-                #name= le.classes_[pred_name[i]]
 
-                markFaces(
+                if(sau.markFaces(
                     testImage,
                     face_locations[i], 
                     name, score, int(args["score"])
-                )
+                )):
+                    present.append({
+                        "name": name,
+                        "Score": score
+                    })
+            #
+            #################################################################
 
+            print("\t[INFO - PreviewingRecognition]")
+            print("\t[INFO - Presented]", present)
             cv2.imshow(
                 testImage_name,
                 cv2.cvtColor(
@@ -148,3 +168,6 @@ if(len(testImage_paths)>0):
                 )
             )
             cv2.waitKey(0)
+            print("\t[INFO - PreviewingRecognitionComplete]")
+        else:
+            print("\t[INFO - DetectionFailed] <Path=", testImage_path, ">")

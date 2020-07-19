@@ -8,38 +8,23 @@
 ############################################################################
 
 import os
-
-
-import face_recognition
 import pickle
 
 import cv2
+
+import face_recognition
 from imutils import paths
 import imutils
+import sau
 
-# thisFile_path= os.path.dirname(os.path.abspath(__file__))
-# print(thisFile_path)
 
-imagesToRegister_path= os.path.join(
-    # thisFile_path,
-    "..",
-    "ImageData", 
-    "ImagesToRegister"
-)
+print("[INFO - imageToRegister_path] " + sau.imagesToRegister_path)
 
-print("[INFO - imageToRegister_path] " + imagesToRegister_path)
+if(not os.path.exists(sau.registerData_path)):
+    os.mkdir(sau.registerData_path)
+print("[INFO - registerData_path] " + sau.registerData_path)
 
-registerData_path= os.path.join(
-    # thisFile_path,
-    ".",
-    "RegisteredData"
-)
-if(not os.path.exists(registerData_path)):
-    os.mkdir(registerData_path)
-
-print("[INFO - registerData_path] " + registerData_path)
-
-with os.scandir(imagesToRegister_path) as rooms:
+with os.scandir(sau.imagesToRegister_path) as rooms:
     for room in rooms:
         print("\t[INFO - Working on", room.name, "]")
 
@@ -95,7 +80,7 @@ with os.scandir(imagesToRegister_path) as rooms:
             }
 
             serialize_file= open(os.path.join(
-                registerData_path,
+                sau.registerData_path,
                 room.name + ".room"
             ), "wb")
             serialize_file.write(pickle.dumps(room_serialized))
