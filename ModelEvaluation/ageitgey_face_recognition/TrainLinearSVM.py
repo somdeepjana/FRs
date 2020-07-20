@@ -9,7 +9,7 @@ import glob
 import pickle
 import argparse
 
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 
 import sau
 
@@ -17,13 +17,6 @@ import sau
 #   Defining all the commandline arguments
 #
 ap= argparse.ArgumentParser()
-ap.add_argument("-k", "--kernel",
-    help="Enter a proper kernel",
-    default="linear",
-    const="linear",
-    nargs='?',
-    choices=["linear", "poly", "rbf", "sigmoid", "precomputed"]
-)
 ap.add_argument("-c", "--regularization",
     help="Regularization parameter. The strength of the regularization is inversely proportional to C",
     default=1.0
@@ -55,10 +48,8 @@ for room in rooms:
         #   Training the SVM Recognizer with Face Embeding Vectors
         #
         print("\t[INFO - TrainingSVM]", "<room=", room_name, ">")
-        recognizer= SVC(
+        recognizer= LinearSVC(
             C=float(args["regularization"]),
-            kernel=args["kernel"],
-            probability=True,
             random_state= int(args["randomstate"])
         )
         recognizer.fit(room_serialized["encodings"], room_serialized["names"])
@@ -71,13 +62,13 @@ for room in rooms:
         #
         recognizerFile_path= os.path.join(
             sau.trainedModdels_path,
-            room_name + ".svm"
+            room_name + ".linearsvm"
         )
         print("\t[INFO - StoringPredictor]", "<path=", recognizerFile_path, ">")
         reconizer_file= open(recognizerFile_path, "wb")
         reconizer_file.write(pickle.dumps(recognizer))
         reconizer_file.close()
-        print("\t[INFO - StoringSuccessful]", "<file=", room_name+".svm", ">")
+        print("\t[INFO - StoringSuccessful]", "<file=", room_name+".linearsvm", ">")
         #
         #################################################################
     else:

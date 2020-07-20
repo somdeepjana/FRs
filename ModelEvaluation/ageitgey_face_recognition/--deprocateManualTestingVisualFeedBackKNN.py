@@ -10,7 +10,7 @@ import pickle
 import argparse
 import numpy as np
 
-from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
 import cv2
 
 import face_recognition
@@ -33,7 +33,7 @@ ap.add_argument("-r", "--room",
 )
 ap.add_argument("-s", "--score",
     help= "Enter the Evaluation Score after which the prediction are positive",
-    default=50
+    default=80
 )
 ap.add_argument("-m", "--model",
     help="Provide the dlib model for face detector",
@@ -63,7 +63,7 @@ args= vars(ap.parse_args())
 #
 trainedModel_path= os.path.join(
     "trainedSVM",
-    args["room"]+".svm"
+    args["room"]+".knn"
 )
 print("[INFO - TrainedModel] <path=", trainedModel_path, ">")
 
@@ -141,7 +141,7 @@ if(no_of_testImages>0):
                 if(sau.markFaces(
                     testImage,
                     face_locations[i], 
-                    name, score, int(args["score"])
+                    name, score, float(args["score"])
                 )):
                     present.append({
                         "name": name,
