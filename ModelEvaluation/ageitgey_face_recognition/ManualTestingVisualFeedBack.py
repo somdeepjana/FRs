@@ -10,7 +10,6 @@ import pickle
 import argparse
 import numpy as np
 
-from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
 import cv2
 
@@ -68,19 +67,13 @@ trainedModel_path= os.path.join(
 )
 print("[INFO - TrainedModel] <path=", trainedModel_path, ">")
 
-trainedLables_path= os.path.join(
-    "trainedSVM",
-    args["room"]+".lables"
-)
-print("[INFO - TrainedModelLables] <path=", trainedLables_path, ">")
-
 testFolder_path= os.path.join(
     "..",
     "ImageData",
     "TestImages",
     args["testfolder"]
 )
-print("[INFO - TestImages] <path=", trainedLables_path, ">")
+print("[INFO - TestImages] <path=", testFolder_path, ">")
 #
 #################################################################
 
@@ -88,7 +81,6 @@ print("[INFO - TestImages] <path=", trainedLables_path, ">")
 #   Loading The model and its clacess
 #
 recognizerModel= pickle.loads(open(trainedModel_path, "rb").read())
-le= pickle.loads(open(trainedLables_path, "rb").read())
 #
 #################################################################
 
@@ -144,7 +136,7 @@ if(no_of_testImages>0):
                 highest_chans= np.argmax(pred)
                 score= pred[highest_chans] * 100
 
-                name= le.classes_[highest_chans]
+                name= recognizerModel.classes_[highest_chans]
 
                 if(sau.markFaces(
                     testImage,

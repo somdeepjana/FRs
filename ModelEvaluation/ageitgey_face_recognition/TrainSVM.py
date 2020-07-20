@@ -9,7 +9,6 @@ import glob
 import pickle
 import argparse
 
-from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
 
 import sau
@@ -52,13 +51,6 @@ for room in rooms:
     print("\t[INFO - LoadingSuccessful]")
 
     if(len(room_serialized["names"]) > 0):
-        #################################################################
-        #   Creating a level Encoder for Storing The Face Names
-        #
-        le= LabelEncoder()
-        labels= le.fit_transform(room_serialized["names"])
-        #
-        #################################################################
 
         #################################################################
         #   Training the SVM Recognizer with Face Embeding Vectors
@@ -70,7 +62,7 @@ for room in rooms:
             probability=True,
             random_state= int(args["randomstate"])
         )
-        recognizer.fit(room_serialized["encodings"], labels)
+        recognizer.fit(room_serialized["encodings"], room_serialized["names"])
         print("\t[INFO - TraininSucessful]", "<room=", room_name, ">")
         #
         #################################################################
@@ -97,11 +89,6 @@ for room in rooms:
             sau.trainedModdels_path,
             room_name+".lables"
         )
-        print("\t[INFO - StoringLabels]", "<path=", labelsFile_path, ">")
-        labels_file= open(labelsFile_path, "wb")
-        labels_file.write(pickle.dumps(le))
-        labels_file.close()
-        print("\t[INFO - StoringSuccessful]", "<file=", room_name+".lables", ">")
     else:
         print("\t[INFO - NoEmbedinPresent]")
         #
