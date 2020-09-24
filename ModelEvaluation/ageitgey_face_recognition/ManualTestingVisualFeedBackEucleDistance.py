@@ -163,7 +163,8 @@ if(no_of_testImages>0):
                     cv2.COLOR_RGB2BGR
                 )
             )
-            cv2.waitKey(0)
+            if cv2.waitKey(0) == ord('q'):
+                break
             print("\t[INFO - PreviewingRecognitionComplete]")
         else:
             print("\t[INFO - DetectionFailed] <Path=", testImage_path, ">")
