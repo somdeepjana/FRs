@@ -10,6 +10,7 @@ import pickle
 import argparse
 
 from sklearn.svm import SVC
+from sklearn.calibration import CalibratedClassifierCV
 
 import sau
 
@@ -26,7 +27,7 @@ ap.add_argument("-k", "--kernel",
 )
 ap.add_argument("-c", "--regularization",
     help="Regularization parameter. The strength of the regularization is inversely proportional to C",
-    default=10
+    default=10.0
 )
 ap.add_argument("-r", "--randomstate",
     help="Give Random state Generator Nmber for constant Probability",
