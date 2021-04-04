@@ -34,7 +34,7 @@ ap.add_argument("-r", "--room",
 )
 ap.add_argument("-s", "--score",
     help= "Enter the Evaluation Score after which the prediction are positive",
-    default=2.0
+    default=40.0
 )
 ap.add_argument("-m", "--model",
     help="Provide the dlib model for face detector",

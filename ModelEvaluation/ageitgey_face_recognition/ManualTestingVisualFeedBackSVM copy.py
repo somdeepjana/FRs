@@ -6,12 +6,11 @@
 
 import os
 import glob
-import time
 import pickle
 import argparse
 import numpy as np
 
-from sklearn.svm import LinearSVC
+from sklearn.svm import SVC
 import cv2
 
 import face_recognition
@@ -24,9 +23,9 @@ import sau
 #   Defining all the commandline arguments
 #
 ap= argparse.ArgumentParser()
-ap.add_argument("-c", "--capture",
-    help="enter the capture source",
-    default="0"
+ap.add_argument("-t", "--testfolder",
+    help="Provide The folder Name of TestImages",
+    default="Tarapada_Test"
 )
 ap.add_argument("-r", "--room",
     help="Privide The Room To compare with",
@@ -34,7 +33,7 @@ ap.add_argument("-r", "--room",
 )
 ap.add_argument("-s", "--score",
     help= "Enter the Evaluation Score after which the prediction are positive",
-    default=2.0
+    default=85
 )
 ap.add_argument("-m", "--model",
     help="Provide the dlib model for face detector",
@@ -64,17 +63,17 @@ args= vars(ap.parse_args())
 #
 trainedModel_path= os.path.join(
     "trainedSVM",
-    args["room"]+".linearsvm"
+    args["room"]+".svm"
 )
 print("[INFO - TrainedModel] <path=", trainedModel_path, ">")
 
-testVideo_path= os.path.join(
+testFolder_path= os.path.join(
     "..",
     "ImageData",
-    "TestVideo",
-    args["capture"]
+    "TestImages",
+    args["testfolder"]
 )
-print("[INFO - TestVideo] <path=", testVideo_path, ">")
+print("[INFO - TestImages] <path=", testFolder_path, ">")
 #
 #################################################################
 
@@ -85,49 +84,40 @@ recognizerModel= pickle.loads(open(trainedModel_path, "rb").read())
 #
 #################################################################
 
+testImage_paths= list(paths.list_images(testFolder_path))
+no_of_testImages= len(testImage_paths)
+print("[INFO - TotalTestImages] <No of Test Images=", no_of_testImages, ">")
 
-try:
-    testVideo_path= int(args["capture"])
-except:
-    testVideo_path= testVideo_path
-testVideoStreme= cv2.VideoCapture(testVideo_path)
-print("[INFO - VideoStremeLoaded] <Source=", testVideo_path, ">")
-
-present_name= []
-present_score= []
-while(testVideoStreme.isOpened()):
-
-    sucessRead, frame= testVideoStreme.read()
-
-    if sucessRead:
+if(no_of_testImages>0):
+    for (i_img, testImage_path) in enumerate(testImage_paths):
+        testImage_name= testImage_path.split("\\")[-1]
 
         #   Preprocessing the Image befor pushing it to the CNN
-        print("[INFO - PreprocessingFrame]")
-        testFrame= imutils.resize(
+        print("[INFO - LoadingPreprocess] <Image=", testImage_name, ">")
+        testImage= imutils.resize(
             cv2.cvtColor(
-                frame,
+                cv2.imread(testImage_path),
                 cv2.COLOR_BGR2RGB
             ),
             width= int(args["width"])
         )
-        print("[INFO - PreprocessingSuccessful]")
+        print("[INFO - LoadedPreprocessedSuccessful]")
 
         # Detecting all the faces
         print("\t[INFO - DetectingFaces]")
         face_locations= face_recognition.face_locations(
-            testFrame,
+            testImage,
             model=args["model"],
             number_of_times_to_upsample= int(args["upscale"])
         )
         no_of_faces= len(face_locations)
-
 
         if(no_of_faces>0):
             print("\t[INFO - DetectionSuccessful] <Detected Faces no=", no_of_faces, ">")
 
             print("\t[INFO - GeneratingFaceEmbedings]")
             face_encodings= face_recognition.face_encodings(
-                testFrame,
+                testImage,
                 model="cnn",
                 num_jitters= int(args["jitters"]),
                 known_face_locations= face_locations
@@ -135,50 +125,44 @@ while(testVideoStreme.isOpened()):
             print("\t[INFO - GenerationSuccessful]")
 
             print("\t[INFO - PredictingFaces]")
-            predictions= recognizerModel.decision_function(face_encodings)
+            predictions= recognizerModel.predict_proba(face_encodings)
+            pred_clacify= recognizerModel.predict(face_encodings)
             print("\t[INFO - PredictionSuccessful]")
 
             #################################################################
             #   Predicting The Presence of a Person
             #
-            for (i, pred) in enumerate(predictions):
-                highest_chans= np.argmax(pred)
-                score= pred[highest_chans] * 100
+            present= []
+            for (i, pred) in enumerate(pred_clacify):
 
-                name= recognizerModel.classes_[highest_chans]
+                name= pred
+                score= float(predictions[i][np.where(recognizerModel.classes_==name)] * 100)
 
-                presence_idx= -1
-                try:
-                    presence_idx= present_name.index(name)
-                except:
-                    presence_idx= -1
                 if(sau.markFaces(
-                    testFrame,
+                    testImage,
                     face_locations[i], 
                     name, score, float(args["score"])
                 )):
-                    if(presence_idx == -1):
-                        present_name.append(name)
-                        present_score.append(score)
-                    else:
-                        if(present_score[presence_idx]>score):
-                            present_score[presence_idx]= score
+                    present.append({
+                        "name": name,
+                        "Score": score
+                    })
             #
             #################################################################
-        cv2.imshow(
-            "Video",
-            cv2.cvtColor(
-                testFrame,
-                cv2.COLOR_RGB2BGR
+
+            print("\t[INFO - PreviewingRecognition]")
+            print("\t[INFO - Presented]", present)
+            cv2.imshow(
+                testImage_name,
+                cv2.cvtColor(
+                    testImage,
+                    cv2.COLOR_RGB2BGR
+                )
             )
-        )
-        if cv2.waitKey(1) == ord('q'):
-            break
-        print("\t[INFO - PreviewingRecognitionComplete]")
-    else:
-        print("\t[INFO - FrameReadFail]")
-        break
-    
-print("\t[INFO - AllPresents]\n", present_name, "\n", present_score)
-testVideoStreme.release()
-cv2.destroyAllWindows()
+            if cv2.waitKey(0) & 0xFF == ord('q'):
+                break
+            print("\t[INFO - PreviewingRecognitionComplete]")
+        else:
+            print("\t[INFO - DetectionFailed] <Path=", testImage_path, ">")
+else:
+    print("\t[INFO - NoTestImages] <Path=", testImage_paths, ">")

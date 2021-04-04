@@ -34,7 +34,7 @@ ap.add_argument("-r", "--room",
 )
 ap.add_argument("-s", "--score",
     help= "Enter the Evaluation Score after which the prediction are positive",
-    default=2.0
+    default=85.0
 )
 ap.add_argument("-m", "--model",
     help="Provide the dlib model for face detector",
@@ -135,17 +135,18 @@ while(testVideoStreme.isOpened()):
             print("\t[INFO - GenerationSuccessful]")
 
             print("\t[INFO - PredictingFaces]")
-            predictions= recognizerModel.decision_function(face_encodings)
+            # predictions= recognizerModel.decision_function(face_encodings)
+            predictions= recognizerModel.predict(face_encodings)
+            prediction_proba= recognizerModel.predict_proba(face_encodings)
             print("\t[INFO - PredictionSuccessful]")
 
             #################################################################
             #   Predicting The Presence of a Person
             #
             for (i, pred) in enumerate(predictions):
-                highest_chans= np.argmax(pred)
-                score= pred[highest_chans] * 100
 
-                name= recognizerModel.classes_[highest_chans]
+                name= pred
+                score= float(prediction_proba[i][np.where(recognizerModel.classes_==name)] * 100)
 
                 presence_idx= -1
                 try:

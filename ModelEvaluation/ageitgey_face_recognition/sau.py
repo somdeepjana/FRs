@@ -62,4 +62,13 @@ def markFaces(image_base, bounding_box, name, eval_score, ref_score):
             (left, top),(right, bottom),
             (255, 0, 0),2
         )
+        nameProbText_Y= top-10 if top - 10 > 10 else top + 10
+        text= "{}: {:.2f}".format(name, eval_score)
+        cv2.putText(
+            image_base,
+            text,
+            (left, nameProbText_Y),
+            cv2.QT_FONT_NORMAL,
+            0.5, (255, 0, 0), 1, cv2.LINE_AA
+        )
         return False
