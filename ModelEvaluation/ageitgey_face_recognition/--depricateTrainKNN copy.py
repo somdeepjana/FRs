@@ -9,7 +9,7 @@ import glob
 import pickle
 import argparse
 
-from sklearn.svm import LinearSVC
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.calibration import CalibratedClassifierCV
 
 import sau
@@ -18,13 +18,23 @@ import sau
 #   Defining all the commandline arguments
 #
 ap= argparse.ArgumentParser()
-ap.add_argument("-c", "--regularization",
-    help="Regularization parameter. The strength of the regularization is inversely proportional to C",
-    default=1.0
+ap.add_argument("-k", "--neighbors",
+    help="No of Neighbors to concider",
+    default=3
 )
-ap.add_argument("-r", "--randomstate",
-    help="Give Random state Generator Nmber for constant Probability",
-    default= 42
+ap.add_argument("-w", "--weights",
+    help="Enter a proper algorithm",
+    default="distance",
+    const="distance",
+    nargs='?',
+    choices=["uniform", "distance"]
+)
+ap.add_argument("-a", "--algorithm",
+    help="Enter a proper algorithm",
+    default="auto",
+    const="auto",
+    nargs='?',
+    choices=["auto", "ball_tree", "kd_tree", "brute"]
 )
 args= vars(ap.parse_args())
 #
@@ -49,10 +59,11 @@ for room in rooms:
         #   Training the SVM Recognizer with Face Embeding Vectors
         #
         print("\t[INFO - TrainingSVM]", "<room=", room_name, ">")
-        recognizer= LinearSVC(
-            C=float(args["regularization"]),
-            random_state= int(args["randomstate"]),
-            class_weight= "balanced"
+        recognizer= KNeighborsClassifier(
+            n_neighbors=int(args["neighbors"]),
+            weights= args["weights"],
+            algorithm= args["algorithm"],
+            n_jobs= -1
         )
         recognizer= CalibratedClassifierCV(
             base_estimator=recognizer,
@@ -68,13 +79,13 @@ for room in rooms:
         #
         recognizerFile_path= os.path.join(
             sau.trainedModdels_path,
-            room_name + ".linearsvm"
+            room_name + ".knn"
         )
         print("\t[INFO - StoringPredictor]", "<path=", recognizerFile_path, ">")
         reconizer_file= open(recognizerFile_path, "wb")
         reconizer_file.write(pickle.dumps(recognizer))
         reconizer_file.close()
-        print("\t[INFO - StoringSuccessful]", "<file=", room_name+".linearsvm", ">")
+        print("\t[INFO - StoringSuccessful]", "<file=", room_name+".knn", ">")
         #
         #################################################################
     else:
