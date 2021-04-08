@@ -25,9 +25,9 @@ import sau
 #   Defining all the commandline arguments
 #
 ap= argparse.ArgumentParser()
-ap.add_argument("-t", "--testfolder",
-    help="Provide The folder Name of TestImages",
-    default="Tarapada_Test"
+ap.add_argument("-c", "--capture",
+    help="enter the capture source",
+    default="0"
 )
 ap.add_argument("-r", "--room",
     help="Privide The Room To compare with",
@@ -65,17 +65,17 @@ args= vars(ap.parse_args())
 #
 trainedModel_path= os.path.join(
     "trainedSVM",
-    args["room"]+".linearsvm"
+    args["room"]+".svm"
 )
 print("[INFO - TrainedModel] <path=", trainedModel_path, ">")
 
-testFolder_path= os.path.join(
+testVideo_path= os.path.join(
     "..",
     "ImageData",
-    "TestImages",
-    args["testfolder"]
+    "TestVideo",
+    args["capture"]
 )
-print("[INFO - TestImages] <path=", testFolder_path, ">")
+print("[INFO - TestVideo] <path=", testVideo_path, ">")
 #
 #################################################################
 
@@ -86,42 +86,49 @@ recognizerModel= pickle.loads(open(trainedModel_path, "rb").read())
 #
 #################################################################
 
-testImage_paths= list(paths.list_images(testFolder_path))
-no_of_testImages= len(testImage_paths)
-print("[INFO - TotalTestImages] <No of Test Images=", no_of_testImages, ">")
 
-if(no_of_testImages>0):
-    for (i_img, testImage_path) in enumerate(testImage_paths):
-        testImage_name= testImage_path.split("\\")[-1]
+try:
+    testVideo_path= int(args["capture"])
+except:
+    testVideo_path= testVideo_path
+testVideoStreme= cv2.VideoCapture(testVideo_path)
+print("[INFO - VideoStremeLoaded] <Source=", testVideo_path, ">")
 
-        start_time= time.time()
+present_name= []
+present_score= []
+while(testVideoStreme.isOpened()):
+
+    sucessRead, frame= testVideoStreme.read()
+
+    if sucessRead:
 
         #   Preprocessing the Image befor pushing it to the CNN
-        print("[INFO - LoadingPreprocess] <Image=", testImage_name, ">")
-        testImage= imutils.resize(
+        print("[INFO - PreprocessingFrame]")
+        testFrame= imutils.resize(
             cv2.cvtColor(
-                cv2.imread(testImage_path),
+                frame,
                 cv2.COLOR_BGR2RGB
             ),
             width= int(args["width"])
         )
-        print("[INFO - LoadedPreprocessedSuccessful]")
+        print("[INFO - PreprocessingSuccessful]")
 
         # Detecting all the faces
         print("\t[INFO - DetectingFaces]")
         face_locations= face_recognition.face_locations(
-            testImage,
+            testFrame,
             model=args["model"],
             number_of_times_to_upsample= int(args["upscale"])
         )
         no_of_faces= len(face_locations)
+
 
         if(no_of_faces>0):
             print("\t[INFO - DetectionSuccessful] <Detected Faces no=", no_of_faces, ">")
 
             print("\t[INFO - GeneratingFaceEmbedings]")
             face_encodings= face_recognition.face_encodings(
-                testImage,
+                testFrame,
                 model="large",
                 num_jitters= int(args["jitters"]),
                 known_face_locations= face_locations
@@ -137,34 +144,43 @@ if(no_of_testImages>0):
             #################################################################
             #   Predicting The Presence of a Person
             #
-            present= []
             for (i, pred) in enumerate(predictions):
+
                 name= pred
                 score= float(prediction_proba[i][np.where(recognizerModel.classes_==name)] * 100)
 
+                presence_idx= -1
+                try:
+                    presence_idx= present_name.index(name)
+                except:
+                    presence_idx= -1
                 if(sau.markFaces(
-                    testImage,
+                    testFrame,
                     face_locations[i], 
                     name, score, float(args["score"])
                 )):
-                    present.append({
-                        "name": name,
-                        "Score": score
-                    })
+                    if(presence_idx == -1):
+                        present_name.append(name)
+                        present_score.append(score)
+                    else:
+                        if(present_score[presence_idx]>score):
+                            present_score[presence_idx]= score
             #
             #################################################################
-
-            print("\t[INFO - PreviewingRecognition]", time.time()-start_time)
-            print("\t[INFO - Presented]", present)
-            cv2.imshow(
-                testImage_name,
-                cv2.cvtColor(
-                    testImage,
-                    cv2.COLOR_RGB2BGR
-                )
+        cv2.imshow(
+            "Video",
+            cv2.cvtColor(
+                testFrame,
+                cv2.COLOR_RGB2BGR
             )
-            if cv2.waitKey(0) == ord('q'):
-                break
-            print("\t[INFO - PreviewingRecognitionComplete]")
-        else:
-            print("\t[INFO - DetectionFailed] <Path=", testImage_path, ">")
+        )
+        if cv2.waitKey(1) == ord('q'):
+            break
+        print("\t[INFO - PreviewingRecognitionComplete]")
+    else:
+        print("\t[INFO - FrameReadFail]")
+        break
+    
+print("\t[INFO - AllPresents]\n", present_name, "\n", present_score)
+testVideoStreme.release()
+cv2.destroyAllWindows()

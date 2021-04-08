@@ -6,13 +6,12 @@
 
 import os
 import glob
-import time
 import pickle
 import argparse
 import numpy as np
 
-from sklearn.svm import LinearSVC
-from sklearn.calibration import CalibratedClassifierCV
+from sklearn.svm import SVC
+from scipy.special import softmax
 import cv2
 
 import face_recognition
@@ -35,7 +34,7 @@ ap.add_argument("-r", "--room",
 )
 ap.add_argument("-s", "--score",
     help= "Enter the Evaluation Score after which the prediction are positive",
-    default=85.0
+    default=85
 )
 ap.add_argument("-m", "--model",
     help="Provide the dlib model for face detector",
@@ -65,7 +64,7 @@ args= vars(ap.parse_args())
 #
 trainedModel_path= os.path.join(
     "trainedSVM",
-    args["room"]+".linearsvm"
+    args["room"]+".svm"
 )
 print("[INFO - TrainedModel] <path=", trainedModel_path, ">")
 
@@ -93,8 +92,6 @@ print("[INFO - TotalTestImages] <No of Test Images=", no_of_testImages, ">")
 if(no_of_testImages>0):
     for (i_img, testImage_path) in enumerate(testImage_paths):
         testImage_name= testImage_path.split("\\")[-1]
-
-        start_time= time.time()
 
         #   Preprocessing the Image befor pushing it to the CNN
         print("[INFO - LoadingPreprocess] <Image=", testImage_name, ">")
@@ -129,18 +126,21 @@ if(no_of_testImages>0):
             print("\t[INFO - GenerationSuccessful]")
 
             print("\t[INFO - PredictingFaces]")
-            # predictions= recognizerModel.decision_function(face_encodings)
-            predictions= recognizerModel.predict(face_encodings)
-            prediction_proba= recognizerModel.predict_proba(face_encodings)
+            predictions= recognizerModel.predict_proba(face_encodings)
+            print(predictions)
+            predictions= softmax(predictions, axis=1)
+            print(predictions)
+            pred_clacify= recognizerModel.predict(face_encodings)
             print("\t[INFO - PredictionSuccessful]")
 
             #################################################################
             #   Predicting The Presence of a Person
             #
             present= []
-            for (i, pred) in enumerate(predictions):
+            for (i, pred) in enumerate(pred_clacify):
+
                 name= pred
-                score= float(prediction_proba[i][np.where(recognizerModel.classes_==name)] * 100)
+                score= float(predictions[i][np.where(recognizerModel.classes_==name)] * 100)
 
                 if(sau.markFaces(
                     testImage,
@@ -154,7 +154,7 @@ if(no_of_testImages>0):
             #
             #################################################################
 
-            print("\t[INFO - PreviewingRecognition]", time.time()-start_time)
+            print("\t[INFO - PreviewingRecognition]")
             print("\t[INFO - Presented]", present)
             cv2.imshow(
                 testImage_name,
@@ -168,3 +168,5 @@ if(no_of_testImages>0):
             print("\t[INFO - PreviewingRecognitionComplete]")
         else:
             print("\t[INFO - DetectionFailed] <Path=", testImage_path, ">")
+else:
+    print("\t[INFO - NoTestImages] <Path=", testImage_paths, ">")

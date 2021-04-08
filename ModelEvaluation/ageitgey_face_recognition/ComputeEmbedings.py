@@ -13,6 +13,7 @@ import pickle
 import cv2
 
 import face_recognition
+import numpy as np
 from imutils import paths
 import imutils
 import sau
@@ -42,7 +43,7 @@ with os.scandir(sau.imagesToRegister_path) as rooms:
                         cv2.imread(image),
                         cv2.COLOR_BGR2RGB
                     ),
-                    width= 600
+                    width= 700
                 )
 
                 face_locations= face_recognition.face_locations(
@@ -54,7 +55,7 @@ with os.scandir(sau.imagesToRegister_path) as rooms:
                 if(len(face_locations)>0):
                     face_encoding= face_recognition.face_encodings(
                         load_image, 
-                        model="cnn", 
+                        model="large", 
                         num_jitters= 1, 
                         known_face_locations=face_locations
                     )[0]

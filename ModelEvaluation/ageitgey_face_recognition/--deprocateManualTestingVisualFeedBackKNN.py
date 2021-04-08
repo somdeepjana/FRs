@@ -119,7 +119,7 @@ if(no_of_testImages>0):
             print("\t[INFO - GeneratingFaceEmbedings]")
             face_encodings= face_recognition.face_encodings(
                 testImage,
-                model="cnn",
+                model="large",
                 num_jitters= int(args["jitters"]),
                 known_face_locations= face_locations
             )

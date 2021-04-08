@@ -35,7 +35,7 @@ ap.add_argument("-r", "--room",
 )
 ap.add_argument("-s", "--score",
     help= "Enter the Evaluation Score after which the prediction are positive",
-    default=50
+    default=35
 )
 ap.add_argument("-m", "--model",
     help="Provide the dlib model for face detector",
@@ -122,7 +122,7 @@ if(no_of_testImages>0):
             print("\t[INFO - GeneratingFaceEmbedings]")
             face_encodings= face_recognition.face_encodings(
                 testImage,
-                model="cnn",
+                model="large",
                 num_jitters= int(args["jitters"]),
                 known_face_locations= face_locations
             )
