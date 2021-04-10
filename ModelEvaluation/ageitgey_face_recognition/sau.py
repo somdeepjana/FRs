@@ -6,6 +6,7 @@
 import os
 
 import cv2
+import numpy as np
 
 
 # thisFile_path= os.path.dirname(os.path.abspath(__file__))
@@ -74,3 +75,14 @@ def markFaces(image_base, bounding_box, name, eval_score, ref_score):
             0.5, (255, 0, 0), 1, cv2.LINE_AA
         )
         return False
+
+
+def prewhiten(x):
+    mean = x.mean()
+    std = x.std()
+    std_adj = std.clip(min=1.0/(float(x.size)**0.5))
+    y = (x - mean) / std_adj
+    return y
+
+def pre_process_face(face):
+    return np.uint8(face-127/128)

@@ -50,9 +50,9 @@ for room in rooms:
         #
         print("\t[INFO - TrainingSVM]", "<room=", room_name, ">")
         recognizer= LinearSVC(
-            C=float(args["regularization"]),
-            random_state= int(args["randomstate"]),
-            class_weight= "balanced"
+            C=float(args["regularization"])
+            # random_state= int(args["randomstate"]),
+            # class_weight= "balanced"
         )
         recognizer= CalibratedClassifierCV(
             base_estimator=recognizer,

@@ -128,7 +128,7 @@ while(testVideoStreme.isOpened()):
 
             print("\t[INFO - GeneratingFaceEmbedings]")
             face_encodings= face_recognition.face_encodings(
-                testFrame,
+                sau.pre_process_face(testFrame),
                 model="large",
                 num_jitters= int(args["jitters"]),
                 known_face_locations= face_locations

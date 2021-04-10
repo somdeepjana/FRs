@@ -116,7 +116,7 @@ if(no_of_testImages>0):
 
             print("\t[INFO - GeneratingFaceEmbedings]")
             face_encodings= face_recognition.face_encodings(
-                testImage,
+                sau.pre_process_face(testImage),
                 model="cnn",
                 num_jitters= int(args["jitters"]),
                 known_face_locations= face_locations

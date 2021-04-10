@@ -35,7 +35,7 @@ ap.add_argument("-r", "--room",
 )
 ap.add_argument("-s", "--score",
     help= "Enter the Evaluation Score after which the prediction are positive",
-    default=85.0
+    default=90.0
 )
 ap.add_argument("-m", "--model",
     help="Provide the dlib model for face detector",
@@ -128,7 +128,7 @@ while(testVideoStreme.isOpened()):
 
             print("\t[INFO - GeneratingFaceEmbedings]")
             face_encodings= face_recognition.face_encodings(
-                testFrame,
+                sau.pre_process_face(testFrame),
                 model="large",
                 num_jitters= int(args["jitters"]),
                 known_face_locations= face_locations

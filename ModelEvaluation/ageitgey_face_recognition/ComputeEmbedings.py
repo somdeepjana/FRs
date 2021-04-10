@@ -58,19 +58,18 @@ with os.scandir(sau.imagesToRegister_path) as rooms:
                     number_of_times_to_upsample= 1
                 )
 
+                # print(np.uint8(load_image-127/128))
+                # exit()
+                # cv2.imshow("a", prewhiten(np.uint8(load_image-127/128)))
+                # cv2.waitKey(0)
+
                 if(len(face_locations)>0):
                     face_encoding= face_recognition.face_encodings(
-                        load_image, 
+                        np.uint8(load_image-127/128), 
                         model="large", 
                         num_jitters= 1, 
                         known_face_locations=face_locations
                     )[0]
-
-                    # print(
-                    #     "\t\t[INFO - ImageEmbeded] <Name=", name, ">",
-                    #     "<No of Faces=", len(face_locations), ">",
-                    #     "<location=", image, ">"
-                    # )
 
                     persons_encodings.append(face_encoding)
                     persons_names.append(name)
@@ -104,3 +103,4 @@ with os.scandir(sau.imagesToRegister_path) as rooms:
             serialize_file.close()
         else:
             print("\t[INFO - NoImagePresent]")
+
