@@ -10,6 +10,7 @@
 import os
 import io
 import pickle
+from tqdm import tqdm
 
 import cv2
 
@@ -28,7 +29,7 @@ print("[INFO - registerData_path] " + sau.registerData_path)
 
 with os.scandir(sau.imagesToRegister_path) as rooms:
     for room in rooms:
-        print("\t[INFO - Working on", room.name, "]")
+        # print("\t[INFO - Working on", room.name, "]")
 
         image_list= list(paths.list_images(room))
         if(len(image_list)> 0):
@@ -36,8 +37,11 @@ with os.scandir(sau.imagesToRegister_path) as rooms:
             persons_names= []
             persons_encodings= []
 
+            image_batch= []
+            t_image_list= tqdm(image_list, desc= "[INFO - Working on " + room.name + " ]")
+            for image in t_image_list:
+                t_image_list.set_postfix_str(image.split("\\")[-1])
 
-            for image in image_list:
                 name= image.split("\\")[-2]
                 #load_image= face_recognition.load_image_file(image)
                 load_image= imutils.resize(
@@ -62,11 +66,11 @@ with os.scandir(sau.imagesToRegister_path) as rooms:
                         known_face_locations=face_locations
                     )[0]
 
-                    print(
-                        "\t\t[INFO - ImageEmbeded] <Name=", name, ">",
-                        "<No of Faces=", len(face_locations), ">",
-                        "<location=", image, ">"
-                    )
+                    # print(
+                    #     "\t\t[INFO - ImageEmbeded] <Name=", name, ">",
+                    #     "<No of Faces=", len(face_locations), ">",
+                    #     "<location=", image, ">"
+                    # )
 
                     persons_encodings.append(face_encoding)
                     persons_names.append(name)
@@ -76,6 +80,8 @@ with os.scandir(sau.imagesToRegister_path) as rooms:
                         "\t\t[INFO - FaceDetectFail] <Name=", name, ">",
                         "<location=", image, ">"
                     )
+
+            t_image_list.set_postfix_str("Complete")
 
             np.savetxt("./analyze/"+room.name+"_vecs.tsv", persons_encodings, delimiter='\t')
             out_m = io.open("./analyze/"+room.name+'_meta.tsv', 'w', encoding='utf-8')
