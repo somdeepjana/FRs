@@ -111,7 +111,6 @@ if(no_of_testImages>0):
             number_of_times_to_upsample= int(args["upscale"])
         )
         no_of_faces= len(face_locations)
-
         if(no_of_faces>0):
             print("\t[INFO - DetectionSuccessful] <Detected Faces no=", no_of_faces, ">")
 

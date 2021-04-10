@@ -21,6 +21,8 @@ registerData_path= "RegisteredData"
 
 trainedModdels_path= "trainedSVM"
 
+batch_size= 64
+
 
 def markFaces(image_base, bounding_box, name, eval_score, ref_score):
     """This is a utility function for drawing bounding boxes.

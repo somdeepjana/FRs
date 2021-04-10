@@ -36,7 +36,7 @@ with os.scandir(sau.imagesToRegister_path) as rooms:
             persons_names= []
             persons_encodings= []
 
-
+            image_batch= []
             for image in image_list:
                 name= image.split("\\")[-2]
                 #load_image= face_recognition.load_image_file(image)
