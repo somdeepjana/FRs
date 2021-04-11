@@ -9,7 +9,10 @@ import glob
 import pickle
 import argparse
 
+import numpy as np
+
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import normalize
 from sklearn.calibration import CalibratedClassifierCV
 
 import sau
@@ -20,12 +23,12 @@ import sau
 ap= argparse.ArgumentParser()
 ap.add_argument("-k", "--neighbors",
     help="No of Neighbors to concider",
-    default=3
+    default=5
 )
 ap.add_argument("-w", "--weights",
     help="Enter a proper algorithm",
-    default="distance",
-    const="distance",
+    default="uniform",
+    const="uniform",
     nargs='?',
     choices=["uniform", "distance"]
 )
@@ -65,11 +68,8 @@ for room in rooms:
             algorithm= args["algorithm"],
             n_jobs= -1
         )
-        recognizer= CalibratedClassifierCV(
-            base_estimator=recognizer,
-            n_jobs= -1
-        )
-        recognizer.fit(room_serialized["encodings"], room_serialized["names"])
+        # recognizer.fit(room_serialized["encodings"], room_serialized["names"])
+        recognizer.fit(normalize(np.array(room_serialized["encodings"])), room_serialized["names"])
         print("\t[INFO - TraininSucessful]", "<room=", room_name, ">")
         #
         #################################################################

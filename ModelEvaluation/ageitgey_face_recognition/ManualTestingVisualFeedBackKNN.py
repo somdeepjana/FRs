@@ -11,6 +11,7 @@ import argparse
 import numpy as np
 
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import normalize
 from sklearn.calibration import CalibratedClassifierCV
 import cv2
 
@@ -34,7 +35,7 @@ ap.add_argument("-r", "--room",
 )
 ap.add_argument("-s", "--score",
     help= "Enter the Evaluation Score after which the prediction are positive",
-    default=80
+    default=30
 )
 ap.add_argument("-m", "--model",
     help="Provide the dlib model for face detector",
@@ -118,7 +119,7 @@ if(no_of_testImages>0):
 
             print("\t[INFO - GeneratingFaceEmbedings]")
             face_encodings= face_recognition.face_encodings(
-                testImage,
+                sau.pre_process_face(testImage),
                 model="large",
                 num_jitters= int(args["jitters"]),
                 known_face_locations= face_locations
@@ -126,27 +127,32 @@ if(no_of_testImages>0):
             print("\t[INFO - GenerationSuccessful]")
 
             print("\t[INFO - PredictingFaces]")
-            # predictions= recognizerModel.predict_proba(face_encodings)
-            predictions= recognizerModel.predict(face_encodings)
-            prediction_proba= recognizerModel.predict_proba(face_encodings)
+            # predictions= recognizerModel.predict(face_encodings)
+            # predictions= recognizerModel.predict(normalize(np.array(face_encodings)))
+            # pred_distances= recognizerModel.kneighbors(face_encodings)
+            pred_distances, pred_idxs= recognizerModel.kneighbors(normalize(np.array(face_encodings)))
             print("\t[INFO - PredictionSuccessful]")
 
             #################################################################
             #   Predicting The Presence of a Person
             #
             present= []
-            for (i, pred) in enumerate(predictions):
-                name= pred
-                score= float(prediction_proba[i][np.where(recognizerModel.classes_==name)] * 100)
+            for (i, pred_idx) in enumerate(pred_idxs):
+                pred_classes= recognizerModel._y[pred_idx]
+                pred_class_idx= np.argmax(np.bincount(pred_classes))
+                idx_of_name= np.where(pred_classes==pred_class_idx)
+
+                name= recognizerModel.classes_[pred_class_idx]
+                score= float(np.amin(pred_distances[i][idx_of_name]) * 100)
 
                 if(sau.markFaces(
                     testImage,
                     face_locations[i], 
-                    name, score, float(args["score"])
+                    name, -score, -float(args["score"])
                 )):
                     present.append({
                         "name": name,
-                        "Score": score
+                        "Score": -score
                     })
             #
             #################################################################

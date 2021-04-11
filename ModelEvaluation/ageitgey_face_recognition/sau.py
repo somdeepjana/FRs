@@ -66,7 +66,7 @@ def markFaces(image_base, bounding_box, name, eval_score, ref_score):
             (255, 0, 0),2
         )
         nameProbText_Y= top-10 if top - 10 > 10 else top + 10
-        text= "{}: {:.2f}".format(name, eval_score)
+        text= "{}:{:.2f}".format(name, eval_score)
         cv2.putText(
             image_base,
             text,

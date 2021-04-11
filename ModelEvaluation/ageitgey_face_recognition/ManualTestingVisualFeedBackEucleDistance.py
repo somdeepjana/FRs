@@ -13,6 +13,8 @@ import numpy as np
 
 
 from sklearn.svm import SVC
+from sklearn.metrics.pairwise import euclidean_distances
+from sklearn.preprocessing import normalize
 import cv2
 
 import face_recognition
@@ -35,7 +37,7 @@ ap.add_argument("-r", "--room",
 )
 ap.add_argument("-s", "--score",
     help= "Enter the Evaluation Score after which the prediction are positive",
-    default=35
+    default=30
 )
 ap.add_argument("-m", "--model",
     help="Provide the dlib model for face detector",
@@ -121,7 +123,7 @@ if(no_of_testImages>0):
 
             print("\t[INFO - GeneratingFaceEmbedings]")
             face_encodings= face_recognition.face_encodings(
-                testImage,
+                sau.pre_process_face(testImage),
                 model="large",
                 num_jitters= int(args["jitters"]),
                 known_face_locations= face_locations
@@ -132,7 +134,8 @@ if(no_of_testImages>0):
             for (i, face_encoding) in enumerate(face_encodings):
 
                 print("\t[INFO - PredictingFaces]")
-                distances= face_recognition.face_distance(StoreEmbedings["encodings"], face_encoding)
+                distances= euclidean_distances(normalize(np.array(StoreEmbedings["encodings"])), normalize(np.array([face_encoding])))
+                distances= np.squeeze(distances)
                 print("\t[INFO - PredictionSuccessful]")
 
                 nearest= np.argmin(distances)
