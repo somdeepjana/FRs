@@ -35,8 +35,12 @@ ap.add_argument("-r", "--room",
 )
 ap.add_argument("-s", "--score",
     help= "Enter the Evaluation Score after which the prediction are positive",
-    default=30
+    default=0.3
 )
+# ap.add_argument("-d", "--thresold_distance",
+#     help= "Enter the thresold distance, any prediction exceeding this distance will be concidered as zero",
+#     default=3
+# )
 ap.add_argument("-m", "--model",
     help="Provide the dlib model for face detector",
     default="cnn",
@@ -138,12 +142,13 @@ if(no_of_testImages>0):
             #
             present= []
             for (i, pred_idx) in enumerate(pred_idxs):
-                pred_classes= recognizerModel._y[pred_idx]
-                pred_class_idx= np.argmax(np.bincount(pred_classes))
-                idx_of_name= np.where(pred_classes==pred_class_idx)
+                nearest_k_classes_no= recognizerModel._y[pred_idx] # Index of nearest K classes
+                highest_frequency_class_no= np.argmax(np.bincount(nearest_k_classes_no)) # index of the class with highest frequency
+                idx_of_highest_frequency= np.where(nearest_k_classes_no==highest_frequency_class_no) # indexs of the highest frequency pred class in nearest_k_classes_no
 
-                name= recognizerModel.classes_[pred_class_idx]
-                score= float(np.amin(pred_distances[i][idx_of_name]) * 100)
+                name= recognizerModel.classes_[highest_frequency_class_no]
+
+                score= np.amin(pred_distances[i][idx_of_highest_frequency])
 
                 if(sau.markFaces(
                     testImage,
