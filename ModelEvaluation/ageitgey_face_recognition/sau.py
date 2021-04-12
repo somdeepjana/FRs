@@ -98,3 +98,8 @@ def prewhiten(x):
 
 def pre_process_face(face):
     return np.uint8(face-127/128)
+
+def post_process_embedding(emb):
+    norm= np.sqrt(np.sum(emb*emb)+0.00001)
+    emb /= norm
+    return emb

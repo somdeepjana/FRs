@@ -65,7 +65,7 @@ with os.scandir(sau.imagesToRegister_path) as rooms:
 
                 if(len(face_locations)>0):
                     face_encoding= face_recognition.face_encodings(
-                        np.uint8(load_image-127/128), 
+                        sau.pre_process_face(load_image), 
                         model="large", 
                         num_jitters= 1, 
                         known_face_locations=face_locations
