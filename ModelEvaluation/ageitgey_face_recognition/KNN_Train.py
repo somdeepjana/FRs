@@ -66,11 +66,16 @@ for room in rooms:
             n_neighbors=int(args["neighbors"]),
             weights= args["weights"],
             algorithm= args["algorithm"],
+            # metric="euclidean",
             n_jobs= -1
         )
         # recognizer.fit(room_serialized["encodings"], room_serialized["names"])
-        recognizer.fit(normalize(np.array(room_serialized["encodings"])), room_serialized["names"])
-        print("\t[INFO - TraininSucessful]", "<room=", room_name, ">")
+        normalized_encoding= normalize(np.array(room_serialized["encodings"]))
+        recognizer.fit(normalized_encoding, room_serialized["names"])
+
+        train_set_acurracy= recognizer.score(normalized_encoding, room_serialized["names"])
+        print("\t[INFO - TraininSucessful]", "<room=", room_name, "><Train set Acurracy=", train_set_acurracy, ">")
+
         #
         #################################################################
 

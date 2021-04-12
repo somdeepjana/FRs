@@ -5,6 +5,10 @@ import time
 import cv2
 import numpy as np
 
+import imutils
+
+from insightface.utils import face_align
+
 def url_to_image(url):
     resp = urllib.request.urlopen(url)
     image = np.asarray(bytearray(resp.read()), dtype="uint8")
@@ -12,18 +16,27 @@ def url_to_image(url):
     return image
 
 url = 'https://github.com/deepinsight/insightface/blob/master/sample-images/t1.jpg?raw=true'
-img = url_to_image(url)
+# img = url_to_image(url)
 
-#img= cv2.cvtColor(cv2.imread("ImageData\\TestImages\\Random\\177-1772654_the-it-crowd.jpg"), cv2.COLOR_BGR2RGB)
+img= imutils.resize(cv2.imread("C:/Users/somdeep/Documents/ComputerVisionProjects/FRs/ModelEvaluation/ImageData/TestImages/Nitesh_Test/me_in_test1.jpg", cv2.COLOR_BGR2RGB), width=700)
+
 
 model = insightface.model_zoo.get_model('retinaface_r50_v1')
-
 ctx_id = -1
-
 model.prepare(ctx_id = ctx_id, nms=0.4)
 
 start_time= time.time()
+
+batch= np.array([img,img])
+
 bbox, landmark = model.detect(img, threshold=0.5, scale=1.0)
+
+for ppp in landmark:
+  img2 = face_align.norm_crop(img, ppp)
+  cv2.imshow("", img2)
+  cv2.waitKey(0)
+
+
 print("Detected in time:", time.time()-start_time)
 
 for bb in bbox:

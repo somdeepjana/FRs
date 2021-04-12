@@ -10,7 +10,7 @@ import pickle
 import argparse
 
 from sklearn.svm import SVC
-from sklearn.calibration import CalibratedClassifierCV
+from sklearn.preprocessing import normalize
 
 import sau
 
@@ -60,11 +60,13 @@ for room in rooms:
             C=float(args["regularization"]),
             kernel=args["kernel"],
             probability=True,
-            class_weight= "balanced",
+            # class_weight= "balanced",
             random_state= int(args["randomstate"])
         )
         recognizer.fit(room_serialized["encodings"], room_serialized["names"])
-        print("\t[INFO - TraininSucessful]", "<room=", room_name, ">")
+
+        train_set_acurracy= recognizer.score(room_serialized["encodings"], room_serialized["names"])
+        print("\t[INFO - TraininSucessful]", "<room=", room_name, "><Train set Acurracy=", train_set_acurracy, ">")
         #
         #################################################################
 
