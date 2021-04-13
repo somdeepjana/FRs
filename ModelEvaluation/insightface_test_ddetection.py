@@ -27,9 +27,16 @@ model.prepare(ctx_id = ctx_id, nms=0.4)
 
 start_time= time.time()
 
-batch= np.array([img,img])
+img_alt= np.moveaxis(img, -1, 0)
+# print(img_alt.shape)
 
-bbox, landmark = model.detect(img, threshold=0.5, scale=1.0)
+batch= np.array([img,img])
+print(batch.shape)
+
+bbox, landmark = model.detect(batch, threshold=0.5, scale=1.0)
+
+print(bbox.shape)
+exit()
 
 for ppp in landmark:
   img2 = face_align.norm_crop(img, ppp)

@@ -13,6 +13,7 @@ import pickle
 from tqdm import tqdm
 
 import cv2
+from sklearn.neighbors import LocalOutlierFactor
 
 import face_recognition
 import numpy as np
@@ -58,11 +59,6 @@ with os.scandir(sau.imagesToRegister_path) as rooms:
                     number_of_times_to_upsample= 1
                 )
 
-                # print(np.uint8(load_image-127/128))
-                # exit()
-                # cv2.imshow("a", prewhiten(np.uint8(load_image-127/128)))
-                # cv2.waitKey(0)
-
                 if(len(face_locations)>0):
                     face_encoding= face_recognition.face_encodings(
                         sau.pre_process_face(load_image), 
@@ -81,6 +77,12 @@ with os.scandir(sau.imagesToRegister_path) as rooms:
                     )
 
             t_image_list.set_postfix_str("Complete")
+
+            # clf = LocalOutlierFactor(n_neighbors=6)
+            # outlier_idx= clf.fit_predict(persons_encodings)
+
+            # persons_encodings= list(np.array(persons_encodings)[outlier_idx==1])
+            # persons_names = list(np.array(persons_names)[outlier_idx==1])
 
             np.savetxt("./analyze/"+room.name+"_vecs.tsv", persons_encodings, delimiter='\t')
             out_m = io.open("./analyze/"+room.name+'_meta.tsv', 'w', encoding='utf-8')
