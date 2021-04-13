@@ -22,16 +22,22 @@ registerData_path= "RegisteredData"
 
 trainedModdels_path= "trainedSVM"
 
+dlib_cnn_face_detection_model_path= os.path.join(
+    "dependencies",
+    "model",
+    "mmod_human_face_detector.dat"
+)
+
 dlib_68_shape_predictor_path= os.path.join(
     "dependencies",
     "model",
     "shape_predictor_68_face_landmarks.dat"
 )
 
-dlib_cnn_face_detection_model_path= os.path.join(
+dlib_facenet_model_path= os.path.join(
     "dependencies",
     "model",
-    "mmod_human_face_detector.dat"
+    "dlib_face_recognition_resnet_model_v1.dat"
 )
 
 batch_size= 64

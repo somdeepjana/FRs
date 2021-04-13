@@ -18,7 +18,12 @@ def url_to_image(url):
 url = 'https://github.com/deepinsight/insightface/blob/master/sample-images/t1.jpg?raw=true'
 # img = url_to_image(url)
 
-img= imutils.resize(cv2.imread("C:/Users/somdeep/Documents/ComputerVisionProjects/FRs/ModelEvaluation/ImageData/TestImages/Nitesh_Test/me_in_test1.jpg", cv2.COLOR_BGR2RGB), width=700)
+img1= cv2.imread("C:\\Users\\somdeep\\Documents\\ComputerVisionProjects\\FRs\\ModelEvaluation\\ImageData\\TestImages\\Tarapada_Test\\20191112131430_IMG_1561.JPG.jpg", cv2.COLOR_BGR2RGB)
+img1= cv2.resize(img1, (700, 825))
+img2= cv2.imread("C:\\Users\\somdeep\\Documents\\ComputerVisionProjects\\FRs\\ModelEvaluation\\ImageData\\TestImages\\Tarapada_Test\\IMG_20190708_122350.jpg", cv2.COLOR_BGR2RGB)
+img2= cv2.resize(img2, (700, 825))
+
+img_batch= cv2.dnn.blobFromImages([img1, img2], size= (700,825))
 
 
 model = insightface.model_zoo.get_model('retinaface_r50_v1')
@@ -27,16 +32,11 @@ model.prepare(ctx_id = ctx_id, nms=0.4)
 
 start_time= time.time()
 
-img_alt= np.moveaxis(img, -1, 0)
-# print(img_alt.shape)
-
-batch= np.array([img,img])
-print(batch.shape)
-
-bbox, landmark = model.detect(batch, threshold=0.5, scale=1.0)
+bbox, landmark = model.detect(img_batch, threshold=0.5, scale=1.0)
 
 print(bbox.shape)
 exit()
+
 
 for ppp in landmark:
   img2 = face_align.norm_crop(img, ppp)
