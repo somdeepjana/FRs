@@ -4,6 +4,7 @@ import urllib.request
 import time
 import cv2
 import numpy as np
+import mxnet as mx
 
 import imutils
 
@@ -23,7 +24,7 @@ img1= cv2.resize(img1, (700, 825))
 img2= cv2.imread("C:\\Users\\somdeep\\Documents\\ComputerVisionProjects\\FRs\\ModelEvaluation\\ImageData\\TestImages\\Tarapada_Test\\IMG_20190708_122350.jpg", cv2.COLOR_BGR2RGB)
 img2= cv2.resize(img2, (700, 825))
 
-img_batch= cv2.dnn.blobFromImages([img1, img2], size= (700,825))
+img_batch= cv2.dnn.blobFromImages([img1, img2], size= (825,700))
 
 
 model = insightface.model_zoo.get_model('retinaface_r50_v1')
@@ -32,9 +33,11 @@ model.prepare(ctx_id = ctx_id, nms=0.4)
 
 start_time= time.time()
 
-bbox, landmark = model.detect(img_batch, threshold=0.5, scale=1.0)
+db = mx.io.DataBatch(data=(img_batch, ))
 
-print(bbox.shape)
+bbox, landmark = model.detect(db, threshold=0.5, scale=1.0)
+
+print(bbox)
 exit()
 
 

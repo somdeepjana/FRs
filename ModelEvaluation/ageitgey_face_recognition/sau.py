@@ -40,7 +40,13 @@ dlib_facenet_model_path= os.path.join(
     "dlib_face_recognition_resnet_model_v1.dat"
 )
 
-batch_size= 64
+arcface_onnx_model_path= os.path.join(
+    "dependencies",
+    "model",
+    "arcfaceresnet100-8.onnx"
+)
+
+batch_size= 500
 
 
 def markFaces(image_base, bounding_box, name, eval_score, ref_score):
