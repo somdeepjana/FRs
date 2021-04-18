@@ -72,7 +72,16 @@ def load_batch_images_from_list(img_paths, width=700):
     return batch_images, batch_lables
 
 
+def get_knn_detection(pred_distance, pred_idx, total_classes, recognizer_y):
+    nearest_k_classes_no= recognizer_y[pred_idx] # Index of nearest K classes
+    highest_frequency_class_no= np.argmax(np.bincount(nearest_k_classes_no)) # index of the class with highest frequency
+    idx_of_highest_frequency= np.where(nearest_k_classes_no==highest_frequency_class_no) # indexs of the highest frequency pred class in nearest_k_classes_no
 
+    name= total_classes[highest_frequency_class_no]
+
+    score= np.amin(pred_distance[idx_of_highest_frequency])
+
+    return name, score
 
 
 if __name__ == "__main__":

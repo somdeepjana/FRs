@@ -20,6 +20,7 @@ from imutils import paths
 import imutils
 
 import sau
+import face_tools as ft
 
 #################################################################
 #   Defining all the commandline arguments
@@ -141,14 +142,8 @@ if(no_of_testImages>0):
             #   Predicting The Presence of a Person
             #
             present= []
-            for (i, pred_idx) in enumerate(pred_idxs):
-                nearest_k_classes_no= recognizerModel._y[pred_idx] # Index of nearest K classes
-                highest_frequency_class_no= np.argmax(np.bincount(nearest_k_classes_no)) # index of the class with highest frequency
-                idx_of_highest_frequency= np.where(nearest_k_classes_no==highest_frequency_class_no) # indexs of the highest frequency pred class in nearest_k_classes_no
-
-                name= recognizerModel.classes_[highest_frequency_class_no]
-
-                score= np.amin(pred_distances[i][idx_of_highest_frequency])
+            for i, (pred_idx, pred_distance) in enumerate(zip(pred_idxs, pred_distances)):
+                name, score= ft.get_knn_detection(pred_distance, pred_idx, recognizerModel.classes_, recognizerModel._y)
 
                 if(sau.markFaces(
                     testImage,
