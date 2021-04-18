@@ -4,6 +4,7 @@
 #
 ############################################################################
 import os
+import math
 
 import cv2
 import numpy as np
@@ -48,6 +49,17 @@ arcface_onnx_model_path= os.path.join(
 
 batch_size= 500
 
+
+def batch_retrive(souce_list:list, batch_size:int):
+    list_size= len(souce_list)
+    no_of_batches= math.ceil(list_size/batch_size)
+
+    for batch_no in range(no_of_batches):
+        batch_start_ptr= min(batch_no*batch_size, list_size-1)
+        batch_end_ptr= min(batch_start_ptr+batch_size, list_size)
+
+        # print(batch_start_ptr, batch_end_ptr)
+        yield souce_list[batch_start_ptr:batch_end_ptr]
 
 def markFaces(image_base, bounding_box, name, eval_score, ref_score):
     """This is a utility function for drawing bounding boxes.

@@ -1,4 +1,6 @@
 
+import math
+
 import time
 import numpy as np
 import cv2
@@ -68,6 +70,7 @@ def load_batch_images_from_list(img_paths, width=700):
         batch_images.append(temp_img)
         batch_lables.append(img_path.split('\\')[-2])
     return batch_images, batch_lables
+
 
 
 
