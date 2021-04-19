@@ -13,6 +13,7 @@ import numpy as np
 
 
 from sklearn.svm import SVC
+from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics.pairwise import cosine_distances
 import cv2
 
@@ -21,6 +22,7 @@ from imutils import paths
 import imutils
 
 import sau
+import face_tools as ft
 
 #################################################################
 #   Defining all the commandline arguments
@@ -84,7 +86,8 @@ print("[INFO - TestImages] <path=", testFolder_path, ">")
 #   Loading The embedings from a room
 #
 StoreEmbedings= pickle.loads(open(embedings_path, "rb").read())
-#
+le= LabelEncoder()
+encoded_lables= le.fit_transform(StoreEmbedings["names"])
 #################################################################
 
 testImage_paths= list(paths.list_images(testFolder_path))
@@ -129,17 +132,14 @@ if(no_of_testImages>0):
             )
             print("\t[INFO - GenerationSuccessful]")
 
+            pred_distances, pred_idxs = ft.get_knn_cosine_distance(np.array(StoreEmbedings["encodings"]), np.array(face_encodings), k=5)
+
             present= []
-            for (i, face_encoding) in enumerate(face_encodings):
+            for i, (pred_idx, pred_distance) in enumerate(zip(pred_idxs, pred_distances)):
 
-                print("\t[INFO - PredictingFaces]")
-                distances= cosine_distances(np.array(StoreEmbedings["encodings"]), np.array([face_encoding]))
-                distances= np.squeeze(distances)
-                print("\t[INFO - PredictionSuccessful]")
-
-                nearest= np.argmin(distances)
-                score= distances[nearest] * 100
-                name= StoreEmbedings["names"][nearest]
+                name, score= ft.get_knn_detection(pred_distance, pred_idx, le.classes_, encoded_lables)
+                score *= 100
+                
 
                 # print("<", np.array([face_encoding]).shape, ">")
                 #################################################################
