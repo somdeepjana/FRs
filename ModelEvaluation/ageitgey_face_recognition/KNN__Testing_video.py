@@ -137,9 +137,6 @@ while(testVideoStreme.isOpened()):
             print("\t[INFO - GenerationSuccessful]")
 
             print("\t[INFO - PredictingFaces]")
-            # predictions= recognizerModel.decision_function(face_encodings)
-            # predictions= recognizerModel.predict(face_encodings)
-            # prediction_proba= recognizerModel.predict_proba(face_encodings)
             pred_distances, pred_idxs= recognizerModel.kneighbors(normalize(np.array(face_encodings)))
             print("\t[INFO - PredictionSuccessful]")
 
