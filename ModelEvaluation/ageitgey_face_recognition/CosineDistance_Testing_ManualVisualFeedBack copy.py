@@ -6,13 +6,15 @@
 
 import os
 import glob
+import time
 import pickle
 import argparse
 import numpy as np
 
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import normalize
-from sklearn.calibration import CalibratedClassifierCV
+
+from sklearn.svm import SVC
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics.pairwise import cosine_distances
 import cv2
 
 import face_recognition
@@ -36,12 +38,8 @@ ap.add_argument("-r", "--room",
 )
 ap.add_argument("-s", "--score",
     help= "Enter the Evaluation Score after which the prediction are positive",
-    default=0.3
+    default=5
 )
-# ap.add_argument("-d", "--thresold_distance",
-#     help= "Enter the thresold distance, any prediction exceeding this distance will be concidered as zero",
-#     default=3
-# )
 ap.add_argument("-m", "--model",
     help="Provide the dlib model for face detector",
     default="cnn",
@@ -68,11 +66,11 @@ args= vars(ap.parse_args())
 #################################################################
 #   specifiying the paths
 #
-trainedModel_path= os.path.join(
-    "trainedSVM",
-    args["room"]+".knn"
+embedings_path= os.path.join(
+    "RegisteredData",
+    args["room"]+".room"
 )
-print("[INFO - TrainedModel] <path=", trainedModel_path, ">")
+print("[INFO - FaceEmbedings] <path=", embedings_path, ">")
 
 testFolder_path= os.path.join(
     "..",
@@ -85,10 +83,11 @@ print("[INFO - TestImages] <path=", testFolder_path, ">")
 #################################################################
 
 #################################################################
-#   Loading The model and its clacess
+#   Loading The embedings from a room
 #
-recognizerModel= pickle.loads(open(trainedModel_path, "rb").read())
-#
+StoreEmbedings= pickle.loads(open(embedings_path, "rb").read())
+le= LabelEncoder()
+encoded_lables= le.fit_transform(StoreEmbedings["names"])
 #################################################################
 
 testImage_paths= list(paths.list_images(testFolder_path))
@@ -98,6 +97,8 @@ print("[INFO - TotalTestImages] <No of Test Images=", no_of_testImages, ">")
 if(no_of_testImages>0):
     for (i_img, testImage_path) in enumerate(testImage_paths):
         testImage_name= testImage_path.split("\\")[-1]
+
+        start_time= time.time()
 
         #   Preprocessing the Image befor pushing it to the CNN
         print("[INFO - LoadingPreprocess] <Image=", testImage_name, ">")
@@ -130,22 +131,26 @@ if(no_of_testImages>0):
                 known_face_locations= face_locations
             )
             print("\t[INFO - GenerationSuccessful]")
+            # pred_distances= cosine_distances(np.array(StoreEmbedings["encodings"]), np.array(face_encodings))
+            # pred_distances= np.flip(np.rot90(pred_distances, k=3), axis=1)
 
-            print("\t[INFO - PredictingFaces]")
-            # predictions= recognizerModel.predict(face_encodings)
-            # predictions= recognizerModel.predict(normalize(np.array(face_encodings)))
-            # pred_distances= recognizerModel.kneighbors(face_encodings)
-            pred_distances, pred_idxs= recognizerModel.kneighbors(normalize(np.array(face_encodings)))
-            print(pred_distances.shape)
-            print("\t[INFO - PredictionSuccessful]")
+            # pred_idxs= np.argsort(pred_distances, axis=1)
+            # pred_distances= np.array(list(map(lambda x, y: y[x], pred_idxs, pred_distances)))[:, :5]
+            # pred_idxs= pred_idxs[:, :5]
 
-            #################################################################
-            #   Predicting The Presence of a Person
-            #
+            pred_distances, pred_idxs = ft.get_knn_cosine_distance(np.array(StoreEmbedings["encodings"]), np.array(face_encodings), k=5)
+
             present= []
             for i, (pred_idx, pred_distance) in enumerate(zip(pred_idxs, pred_distances)):
-                name, score= ft.get_knn_detection(pred_distance, pred_idx, recognizerModel.classes_, recognizerModel._y)
 
+                name, score= ft.get_knn_detection(pred_distance, pred_idx, le.classes_, encoded_lables)
+                score *= 100
+                
+
+                # print("<", np.array([face_encoding]).shape, ">")
+                #################################################################
+                #   Marking The Presence of a Person
+                #
                 if(sau.markFaces(
                     testImage,
                     face_locations[i], 
@@ -155,10 +160,10 @@ if(no_of_testImages>0):
                         "name": name,
                         "Score": -score
                     })
-            #
-            #################################################################
+                #
+                #################################################################
 
-            print("\t[INFO - PreviewingRecognition]")
+            print("\t[INFO - PreviewingRecognition]", time.time()-start_time)
             print("\t[INFO - Presented]", present)
             cv2.imshow(
                 testImage_name,

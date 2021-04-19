@@ -3,6 +3,7 @@ import math
 
 import time
 import numpy as np
+from sklearn.metrics.pairwise import cosine_distances
 import cv2
 
 import dlib
@@ -82,6 +83,16 @@ def get_knn_detection(pred_distance, pred_idx, total_classes, recognizer_y):
     score= np.amin(pred_distance[idx_of_highest_frequency])
 
     return name, score
+
+def get_knn_cosine_distance(stored_encoding, predict_encoding, k=5):
+    pred_distances= cosine_distances(stored_encoding, predict_encoding)
+    pred_distances= np.flip(np.rot90(pred_distances, k=3), axis=1)
+
+    pred_idxs= np.argsort(pred_distances, axis=1)
+    pred_distances= np.array(list(map(lambda x, y: y[x], pred_idxs, pred_distances)))[:, :k]
+    pred_idxs= pred_idxs[:, :k]
+
+    return pred_distances, pred_idxs
 
 
 if __name__ == "__main__":
