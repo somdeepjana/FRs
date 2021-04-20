@@ -18,6 +18,11 @@ imagesToRegister_path= os.path.join(
     "ImageData", 
     "ImagesToRegister"
 )
+rawImage_path= os.path.join(
+    "..",
+    "ImageData",
+    "RawImages"
+)
 
 registerData_path= "RegisteredData"
 
@@ -48,6 +53,7 @@ arcface_onnx_model_path= os.path.join(
 )
 
 batch_size= 500
+padding= 0.20
 
 
 def batch_retrive(souce_list:list, batch_size:int):

@@ -14,7 +14,7 @@ import sau
 ap= argparse.ArgumentParser()
 ap.add_argument("-n", "--name",
     help="Name of the person.",
-    default="test",
+    default="test_quick",
     # required=True
 )
 ap.add_argument("-r", "--room",
@@ -27,16 +27,28 @@ ap.add_argument("-c", "--capture",
     default="0",
     # required=True
 )
+ap.add_argument("-s", "--skip",
+    help="skip no of frames",
+    default=5,
+    # required=True
+)
 args= vars(ap.parse_args())
 
-store_directory= os.path.join(
+raw_store_directory= os.path.join(
+    sau.rawImage_path,
+    args["room"],
+    args["name"]
+)
+if not os.path.exists(raw_store_directory):
+    os.makedirs(raw_store_directory)
+
+processed_store_directory= os.path.join(
     sau.imagesToRegister_path,
     args["room"],
     args["name"]
 )
-
-if not os.path.exists(store_directory):
-    os.makedirs(store_directory)
+if not os.path.exists(processed_store_directory):
+    os.makedirs(processed_store_directory)
 
 try:
     captureVideo_path= int(args["capture"])
@@ -80,21 +92,35 @@ while(cap.isOpened()):
 
     else:
         face_landmarks= pose_predictor_68_point(captureFrame, detections[0].rect)
-        captureFrame= dlib.get_face_chip(captureFrame, face_landmarks, size=320)
-        cv2.imwrite(
-            os.path.join(
-                store_directory,
-                str(face_capture_no)+".jpg"
-            ),
-            cv2.cvtColor(
-                captureFrame,
-                cv2.COLOR_RGB2BGR
-            ) 
-        )
+        captureFace= dlib.get_face_chip(captureFrame, face_landmarks, size=320, padding=sau.padding)
+        if(frame_no% args["skip"]==0):
+            cv2.imwrite(
+                os.path.join(
+                    raw_store_directory,
+                    str(face_capture_no)+".jpg"
+                ),
+                cv2.cvtColor(
+                    captureFrame,
+                    cv2.COLOR_RGB2BGR
+                ) 
+            )
 
-        face_capture_no += 1
-        if(face_capture_no >100):
-            break
+            cv2.imwrite(
+                os.path.join(
+                    processed_store_directory,
+                    str(face_capture_no)+".jpg"
+                ),
+                cv2.cvtColor(
+                    captureFace,
+                    cv2.COLOR_RGB2BGR
+                ) 
+            )
+
+            face_capture_no += 1
+            if(face_capture_no >100):
+                break
+
+        captureFrame= captureFace
 
     cv2.imshow(
         "Recording Face of "+ args["name"],

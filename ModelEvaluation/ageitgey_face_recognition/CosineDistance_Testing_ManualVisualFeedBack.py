@@ -132,7 +132,7 @@ if(no_of_testImages>0):
             )
             print("\t[INFO - GenerationSuccessful]")
 
-            pred_distances, pred_idxs = ft.get_knn_cosine_distance(np.array(StoreEmbedings["encodings"]), np.array(face_encodings), k=5)
+            pred_distances, pred_idxs = ft.get_knn_cosine_distance(np.array(StoreEmbedings["encodings"]), np.array(face_encodings), k_neghbour=5)
 
             present= []
             for i, (pred_idx, pred_distance) in enumerate(zip(pred_idxs, pred_distances)):

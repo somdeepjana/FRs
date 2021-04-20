@@ -140,7 +140,7 @@ while(testVideoStreme.isOpened()):
             print("\t[INFO - GenerationSuccessful]")
 
             print("\t[INFO - PredictingFaces]")
-            pred_distances, pred_idxs = ft.get_knn_cosine_distance(np.array(StoreEmbedings["encodings"]), np.array(face_encodings), k=5)
+            pred_distances, pred_idxs = ft.get_knn_cosine_distance(np.array(StoreEmbedings["encodings"]), np.array(face_encodings), k_neghbour=5)
             print("\t[INFO - PredictionSuccessful]")
 
             #################################################################
