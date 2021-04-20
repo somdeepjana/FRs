@@ -75,7 +75,7 @@ while(cap.isOpened()):
                 frame,
                 cv2.COLOR_BGR2RGB
             ),
-            width= 700
+            width= sau.load_image_width
         )
     print("[INFO - PreprocessingSuccessful]")
     # Detecting all the faces
@@ -92,7 +92,7 @@ while(cap.isOpened()):
 
     else:
         face_landmarks= pose_predictor_68_point(captureFrame, detections[0].rect)
-        captureFace= dlib.get_face_chip(captureFrame, face_landmarks, size=320, padding=sau.padding)
+        captureFace= dlib.get_face_chip(captureFrame, face_landmarks, size=sau.processed_face_size, padding=sau.padding)
         if(frame_no% args["skip"]==0):
             cv2.imwrite(
                 os.path.join(

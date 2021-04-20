@@ -58,10 +58,10 @@ def get_crop_face_from_image(img):
         no_of_facec_in_img += 1
         # print(img.shape)
         # exit()
-    return no_of_facec_in_img, faces_landmarks, dlib.get_face_chips(img, faces_landmarks, size=150)
+    return no_of_facec_in_img, faces_landmarks, dlib.get_face_chips(img, faces_landmarks, size=sau.processed_face_size)
 
 
-def load_batch_images_from_list(img_paths, width=700):
+def load_batch_images_from_list(img_paths, width=sau.load_image_width):
 
     batch_images=[]
     batch_lables=[]

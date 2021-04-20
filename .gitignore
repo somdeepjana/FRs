@@ -133,3 +133,4 @@ ModelEvaluation/ImageData/ImagesToRegister/PyImages/
 ModelEvaluation/ImageData/TestImages/
 ModelEvaluation/ImageData/TestImages/TestVideo/
 ModelEvaluation/ImageData/TestVideo/test.mp4
+ModelEvaluation/ImageData/RawImages/*

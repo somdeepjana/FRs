@@ -50,7 +50,7 @@ with os.scandir(sau.imagesToRegister_path) as rooms:
                         cv2.imread(image),
                         cv2.COLOR_BGR2RGB
                     ),
-                    width= 700
+                    width= sau.load_image_width
                 )
 
                 face_locations= face_recognition.face_locations(

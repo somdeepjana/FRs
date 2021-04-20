@@ -57,7 +57,7 @@ ap.add_argument("-j", "--jitters",
 )
 ap.add_argument("-w", "--width",
     help= "Provide image preprocessing resige width length is not needed because aspect ration will be kept the same",
-    default=700
+    default=sau.load_image_width
 )
 args= vars(ap.parse_args())
 #

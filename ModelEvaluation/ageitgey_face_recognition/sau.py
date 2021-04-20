@@ -10,15 +10,16 @@ import cv2
 import numpy as np
 
 
-# thisFile_path= os.path.dirname(os.path.abspath(__file__))
+thisFile_path= os.path.dirname(os.path.abspath(__file__))
 # print(thisFile_path)
 imagesToRegister_path= os.path.join(
-    # thisFile_path,
+    thisFile_path,
     "..",
     "ImageData", 
     "ImagesToRegister"
 )
 rawImage_path= os.path.join(
+    thisFile_path,
     "..",
     "ImageData",
     "RawImages"
@@ -54,6 +55,8 @@ arcface_onnx_model_path= os.path.join(
 
 batch_size= 500
 padding= 0.20
+load_image_width= 700
+processed_face_size= 350
 
 
 def batch_retrive(souce_list:list, batch_size:int):
