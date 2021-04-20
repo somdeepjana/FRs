@@ -54,9 +54,9 @@ arcface_onnx_model_path= os.path.join(
 )
 
 batch_size= 500
-padding= 0.20
+padding= 0.25
 load_image_width= 700
-processed_face_size= 350
+processed_face_size= 224
 
 
 def batch_retrive(souce_list:list, batch_size:int):

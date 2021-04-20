@@ -45,20 +45,10 @@ with os.scandir(sau.imagesToRegister_path) as rooms:
             persons_encodings= []
 
             for batch in sau.batch_retrive(image_list, sau.batch_size):
-                img_batch, lable_batch= cb.load_batch_images_from_list(batch)
-                # print(len(lable_batch))
-
-                crop_faces, lable_batch, _, no_faces= cb.get_batch_crop_faces_from_diff_input_size(img_batch, lable_batch, slient_drop_multiface=True)
-                # print(len(lable_batch))
-                faces_embeddings= dlib_facenet.compute_face_descriptor(crop_faces, num_jitters=1)
-                
-                # for face_embedding, lable  in zip(faces_embeddings, lable_batch):
-                #     persons_names.append(lable)
-                #     persons_encodings.append(face_embedding)
+                img_batch, lable_batch= cb.load_batch_images_from_list(batch, width=150, square=True, pre_process=True)
+                faces_embeddings= dlib_facenet.compute_face_descriptor(img_batch, num_jitters=1)
                 persons_names.extend(lable_batch)
                 persons_encodings.extend(faces_embeddings)
-                
-            # exit()
 
             # clf = LocalOutlierFactor(n_neighbors=6)
             # outlier_idx= clf.fit_predict(persons_encodings)

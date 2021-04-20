@@ -49,7 +49,7 @@ def get_batch_crop_faces_from_diff_input_size(batch_images, lables, slient_drop_
     return aligned_faces, detect_lables, batch_landmarks, img_face_list
 
 
-def get_crop_face_from_image(img):
+def get_crop_face_from_image(img, size= sau.processed_face_size, padding=sau.padding):
     faces_bbs= cnn_face_detector(img, 1)
     faces_landmarks= dlib.full_object_detections()
     no_of_facec_in_img= 0
@@ -58,16 +58,25 @@ def get_crop_face_from_image(img):
         no_of_facec_in_img += 1
         # print(img.shape)
         # exit()
-    return no_of_facec_in_img, faces_landmarks, dlib.get_face_chips(img, faces_landmarks, size=sau.processed_face_size)
+    return no_of_facec_in_img, faces_landmarks, dlib.get_face_chips(img, faces_landmarks, size=size, padding=padding)
 
 
-def load_batch_images_from_list(img_paths, width=sau.load_image_width):
+def load_batch_images_from_list(img_paths, resize=True, width=sau.load_image_width, square=False, pre_process=False):
 
     batch_images=[]
     batch_lables=[]
 
     for img_path in img_paths:
-        temp_img= imutils.resize(cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB), width=width)
+        temp_img= cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
+        if(resize):
+            if(square):
+                temp_img= cv2.resize(temp_img, (width, width), interpolation = cv2.INTER_NEAREST)
+            else:
+                temp_img= imutils.resize(temp_img, width=width)
+
+        if(pre_process):
+            temp_img= sau.pre_process_face(temp_img)
+
         batch_images.append(temp_img)
         batch_lables.append(img_path.split('\\')[-2])
     return batch_images, batch_lables
