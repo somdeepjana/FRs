@@ -14,8 +14,8 @@ import sau
 ap= argparse.ArgumentParser()
 ap.add_argument("-n", "--name",
     help="Name of the person.",
-    default="test_quick",
-    # required=True
+    # default="test_quick",
+    required=True
 )
 ap.add_argument("-r", "--room",
     help="Name of the Room to store the faces in.",
@@ -25,7 +25,7 @@ ap.add_argument("-r", "--room",
 ap.add_argument("-c", "--capture",
     help="Video feed to captue from",
     default="0",
-    # required=True
+    required=True
 )
 ap.add_argument("-s", "--skip",
     help="skip no of frames",
@@ -53,7 +53,7 @@ if not os.path.exists(processed_store_directory):
 try:
     captureVideo_path= int(args["capture"])
 except:
-    captureVideo_path= testVideo_path
+    captureVideo_path= args["capture"]
 
 
 cnn_face_detector = dlib.cnn_face_detection_model_v1(sau.dlib_cnn_face_detection_model_path)

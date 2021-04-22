@@ -28,7 +28,7 @@ if(not os.path.exists(sau.registerData_path)):
     os.mkdir(sau.registerData_path)
 print("[INFO - registerData_path] " + sau.registerData_path)
 
-with os.scandir(sau.imagesToRegister_path) as rooms:
+with os.scandir(sau.rawImage_path) as rooms:
     for room in rooms:
         # print("\t[INFO - Working on", room.name, "]")
 

@@ -46,6 +46,13 @@ ap.add_argument("-m", "--model",
     nargs='?',
     choices=["cnn", "hog"]
 )
+ap.add_argument("-e", "--embedding",
+    help="Provide the dlib model for face embedding",
+    default="large",
+    const="large",
+    nargs='?',
+    choices=["large", "small"]
+)
 ap.add_argument("-u", "--upscale",
     help="Proivide the detection level upscale value",
     default=1
@@ -133,7 +140,7 @@ while(testVideoStreme.isOpened()):
             print("\t[INFO - GeneratingFaceEmbedings]")
             face_encodings= face_recognition.face_encodings(
                 sau.pre_process_face(testFrame),
-                model="large",
+                model=args["embedding"],
                 num_jitters= int(args["jitters"]),
                 known_face_locations= face_locations
             )
