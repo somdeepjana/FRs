@@ -24,6 +24,10 @@ rawImage_path= os.path.join(
     "ImageData",
     "RawImages"
 )
+attendance_path= os.path.join(
+    thisFile_path,
+    "Attendance"
+)
 
 registerData_path= "RegisteredData"
 
